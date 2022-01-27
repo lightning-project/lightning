@@ -1,0 +1,15 @@
+[package]
+authors = ["stijn <s.heldens@esciencecenter.nl>"]
+edition = "2018"
+name = "lightning-codegen"
+version = "0.1.0"
+
+[dependencies]
+thiserror = "1.0.21"
+serde = { version = "1.0", features=["derive"] }
+lightning-cuda = {path = "../lightning-cuda", features = ["serde"]}
+lightning-core = {path = "../lightning-core" }
+rand = { version = "0.8", features = ["small_rng"]}
+tempfile = "3.1.0"
+cuda-driver-sys = "0.3"
+

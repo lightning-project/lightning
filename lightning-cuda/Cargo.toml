@@ -1,0 +1,17 @@
+[package]
+name = "lightning-cuda"
+version = "0.1.0"
+authors = ["stijn <s.heldens@esciencecenter.nl>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cuda-driver-sys = "0.3.0"
+tempfile="3.1"
+bitflags="1.2"
+
+[dependencies.serde]
+default-features = false
+optional = true
+version = "1"

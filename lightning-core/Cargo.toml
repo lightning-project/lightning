@@ -1,0 +1,23 @@
+[package]
+authors = ["stijn <s.heldens@esciencecenter.nl>"]
+edition = "2018"
+name = "lightning-core"
+version = "0.1.0"
+
+[dependencies]
+thiserror = "1.0.21"
+itertools = "0.9.0"
+parking_lot = "0.11.0"
+fxhash = "0.2"
+anyhow = "1.0.33"
+lazy_static = "1.4.0"
+log = "0.4"
+hostname = "0.3.1"
+qcell = "0.4.1"
+crossbeam = "0.8.0"
+indexmap = { version = "1.6", features=["std"] }
+serde = { version = "1.0", features=["derive"] }
+lightning-cuda = {path = "../lightning-cuda", features = ["serde"]}
+serde_arrays = "0.1"
+either = { version = "1.0", features=["serde"] }
+num_enum = "0.5"
