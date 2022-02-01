@@ -11,7 +11,7 @@ use std::ffi::CString;
 use std::fmt::Write as _;
 use std::io::Write as _;
 
-const HEADER_SOURCE: &[u8] = include_bytes!("../../resources/lightning.h");
+const HEADER_SOURCE: &[u8] = include_bytes!("../resources/lightning.h");
 
 #[derive(Error, Debug)]
 pub enum GenerateError {
