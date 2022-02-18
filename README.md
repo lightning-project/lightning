@@ -9,8 +9,8 @@ This enables scaling of existing GPU kernels to much larger problem sizes, for b
 Lightning efficiently distributes the work/data across GPUS and maximizes efficiency by overlapping scheduling, data movement, and work when possible.
 
 ## Installation Guide
-The project is written in Rust and has been tested with Rust 1.56.
-To build the project, use `cargo`.
+The project is written in [Rust](https://www.rust-lang.org/tools/install) and has been tested with Rust 1.56.
+To build the project use `cargo`, which is included with the Rust installion.
 
 ```bash
 cargo build --release
