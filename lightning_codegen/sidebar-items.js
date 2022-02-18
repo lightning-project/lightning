@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["CPP_NAMESPACE",""]],"enum":[["KernelArg",""],["KernelArrayDimension",""],["KernelParam",""],["KernelSpecializationPolicy",""]],"fn":[["make_valid_ident",""]],"struct":[["Kernel",""],["KernelConfig",""],["KernelDef",""],["ModuleDef",""]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CentralizeDist","Distribution that centralizes data at one memory."]]});

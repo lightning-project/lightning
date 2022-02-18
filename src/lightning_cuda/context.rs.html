@@ -1,0 +1,606 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lightning-cuda&#x2F;src&#x2F;context.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>context.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../lightning_cuda/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Management of CUDA contexts</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!</span>
+
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">cuda_call</span>, <span class="ident">cuda_check</span>, <span class="ident">Device</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">cuda_driver_sys</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
+<span class="kw">use</span> <span class="ident">std::os::raw::c_uint</span>;
+<span class="kw">use</span> <span class="ident">std::ptr::NonNull</span>;
+
+<span class="doccomment">/// Create a new CUDA context for the given device.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The caller ***must*** destroy the context when done using it by calling [`destroy_context`],</span>
+<span class="doccomment">/// otherwise the context will leak resources.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`destroy_context`]: fn.destroy_context.html</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_context</span>(<span class="ident">device</span>: <span class="ident">Device</span>, <span class="ident">flags</span>: <span class="ident">ContextFlags</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ContextHandle</span><span class="op">&gt;</span> {
+    <span class="kw">unsafe</span> {
+        <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">cuda_call</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">cuCtxCreate_v2</span>(<span class="ident">c</span>, <span class="ident">flags</span>.<span class="ident">bits</span>, <span class="ident">device</span>.<span class="ident">raw</span>()))<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">popped</span> <span class="op">=</span> <span class="ident">cuda_call</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">cuCtxPopCurrent_v2</span>(<span class="ident">c</span>))<span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(<span class="ident">handle</span>, <span class="ident">popped</span>);
+
+        <span class="prelude-val">Ok</span>(<span class="ident">ContextHandle::from_raw</span>(<span class="ident">handle</span>).<span class="ident">unwrap</span>())
+    }
+}
+
+<span class="doccomment">/// Access the primary CUDA context for the given device.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Each CUDA device is associated with one _primary_ context. This function returns the</span>
+<span class="doccomment">/// primary context for the given the device and increments its usage count by one. This allows</span>
+<span class="doccomment">/// multiple different libraries to safely interact without explicitly exchanging CUDA contexts.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The caller ***must*** call [`destroy_context`]  when done using the context to decrease</span>
+<span class="doccomment">/// the usage count. Failing to do so will leak resources.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`destroy_context`]: fn.destroy_context.html</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">retain_device_context</span>(<span class="ident">device</span>: <span class="ident">Device</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ContextHandle</span><span class="op">&gt;</span> {
+    <span class="kw">unsafe</span> {
+        <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">cuda_call</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">cuDevicePrimaryCtxRetain</span>(<span class="ident">c</span>, <span class="ident">device</span>.<span class="ident">raw</span>()))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="ident">ContextHandle::from_raw</span>(<span class="ident">h</span>).<span class="ident">unwrap</span>())
+    }
+}
+
+<span class="doccomment">/// Release the primary CUDA context for the given device.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Decrements the usage count of the primary context associated with a device. Once the usage count</span>
+<span class="doccomment">/// drops to zero, the primary context is destroyed by the CUDA runtime.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Safety</span>
+<span class="doccomment">/// All CUDA resources (events, streams, memory, modules) associated with the given context will be</span>
+<span class="doccomment">/// invalidated once this function returns. It is best to destroy all these resources before</span>
+<span class="doccomment">/// destroying the context. For example, the buffer backing a [`PinnedMem`] will be deallocated,</span>
+<span class="doccomment">/// meaning any attempt to access the buffer results in memory faults.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`PinnedMem`]: ../mem/struct.PinnedMem.html</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">release_device_context</span>(<span class="ident">device</span>: <span class="ident">Device</span>) -&gt; <span class="prelude-ty">Result</span> {
+    <span class="ident">cuda_check</span>(<span class="ident">cuDevicePrimaryCtxRelease</span>(<span class="ident">device</span>.<span class="ident">raw</span>()))
+}
+
+<span class="doccomment">/// Destroys the CUDA context associated with the given handle.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The context must have been created using [`create_context`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`create_context`]: fn.create_context.html</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Safety</span>
+<span class="doccomment">/// All CUDA resources (events, streams, memory, modules) associated with the given context will be</span>
+<span class="doccomment">/// invalidated once this function returns. It is best to destroy all these resources before</span>
+<span class="doccomment">/// destroying the context. For example, the buffer backing a [`PinnedMem`] will be deallocated,</span>
+<span class="doccomment">/// meaning any attempt to access the buffer results in memory faults.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`PinnedMem`]: ../mem/struct.PinnedMem.html</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">destroy_context</span>(<span class="ident">handle</span>: <span class="ident">ContextHandle</span>) -&gt; <span class="prelude-ty">Result</span> {
+    <span class="ident">cuda_check</span>(<span class="ident">cuCtxDestroy_v2</span>(<span class="ident">handle</span>.<span class="ident">raw</span>()))
+}
+
+<span class="doccomment">/// Handle to a CUDA context.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Represents a pointer to valid CUDA context. Use [`with`], [`try_with`], or [`activate`] to</span>
+<span class="doccomment">/// push this CUDA context on to the thread-local context stack managed by the CUDA runtime.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`with`]: #method.with</span>
+<span class="doccomment">/// [`try_with`]: #method.try_with</span>
+<span class="doccomment">/// [`activate`]: #method.activate</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that this types does not _own_ the associated context, but is merely a handle the</span>
+<span class="doccomment">/// context. This handle can be obtained using either [`create_context`] or [`retain_device_context`].</span>
+<span class="doccomment">/// The associated context is _not_ destroyed automatically when the handle goes out of scope, but</span>
+<span class="doccomment">/// it must be destroyed manually using either [`destroy_context`] or [`release_device_context`]</span>
+<span class="doccomment">/// when done using it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`create_context`]: fn.create_context.html</span>
+<span class="doccomment">/// [`retain_device_context`]: fn.retain_device_context.html</span>
+<span class="doccomment">/// [`destroy_context`]: fn.destroy_context.html</span>
+<span class="doccomment">/// [`release_device_context`]: fn.release_device_context.html</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContextHandle</span>(<span class="ident">NonNull</span><span class="op">&lt;</span>()<span class="op">&gt;</span>);
+
+<span class="comment">// CUDA driver API is thread-safe, so sending a context across threads should be safe.</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">ContextHandle</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">ContextHandle</span> {}
+
+<span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">ContextHandle</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="ident">f</span>.<span class="ident">debug_tuple</span>(<span class="string">&quot;CudaContextHandle&quot;</span>).<span class="ident">field</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">finish</span>()
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">ContextHandle</span> {
+    <span class="doccomment">/// Returns the top CUDA context in the thread-local stack of contexts.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Yields `None` if the stack is empty.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">current</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ContextHandle</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> { <span class="ident">cuda_call</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">cuCtxGetCurrent</span>(<span class="ident">c</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident"><span class="self">Self</span>::from_raw</span>(<span class="ident">c</span>)) }
+    }
+
+    <span class="doccomment">/// The device associated with this context.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">device</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Device</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">try_with</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Device::current</span>())
+    }
+
+    <span class="doccomment">/// Call the the given closure while this context is active. This is equivalent to pushing this</span>
+    <span class="doccomment">/// context, calling the closure, and popping it again.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use cuba::*;</span>
+    <span class="doccomment">/// # fn fun() {}</span>
+    <span class="doccomment">/// let context = create_context(Device::nth(0)?, ContextFlags::empty())?;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // Call fun while the context is active.</span>
+    <span class="doccomment">/// context.with(|| {</span>
+    <span class="doccomment">///     fun();</span>
+    <span class="doccomment">/// })?;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // The above is equivalent to the following, but less error-prone when the work could</span>
+    <span class="doccomment">/// // return early.</span>
+    <span class="doccomment">/// context.push()?;</span>
+    <span class="doccomment">/// fun();</span>
+    <span class="doccomment">/// context.pop()?;</span>
+    <span class="doccomment">/// ```</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">fun</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">T</span>,
+    {
+        <span class="self">self</span>.<span class="ident">try_with</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">fun</span>)()))
+    }
+
+    <span class="doccomment">/// Similar to [`with`], but allows fallible operations.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`with`]: #method.with</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_with</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">fun</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>,
+        <span class="ident">E</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
+    {
+        <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">activate</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> (<span class="ident">fun</span>)();
+        <span class="ident">drop</span>(<span class="ident">guard</span>);
+
+        <span class="ident">out</span>
+    }
+
+    <span class="doccomment">/// Make this context the active context. A RAII guard is returned. When the guard is destroyed,</span>
+    <span class="doccomment">/// the context is deactivated again.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is equivalent to pushing this context and popping it again once done.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use cuba::*;</span>
+    <span class="doccomment">/// # fn fun() {}</span>
+    <span class="doccomment">/// let context = create_context(Device::nth(0)?, ContextFlags::empty())?;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // Call fun while the context is active.</span>
+    <span class="doccomment">/// {</span>
+    <span class="doccomment">///     // Must assign guard to variable, otherwise it is immediately destroyed.</span>
+    <span class="doccomment">///     let guard = context.activate();</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///     // Perform work.</span>
+    <span class="doccomment">///     ..;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///     // `guard` goes out of scope and the context is deactivated.</span>
+    <span class="doccomment">/// }</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // The above is equivalent to the following, but less error-prone when the</span>
+    <span class="doccomment">/// // work could return early (e.g., break, return, continue, panic).</span>
+    <span class="doccomment">/// {</span>
+    <span class="doccomment">///     context.push()?;</span>
+    <span class="doccomment">///     ..;</span>
+    <span class="doccomment">///     context.pop()?;</span>
+    <span class="doccomment">/// }</span>
+    <span class="doccomment">/// ```</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">activate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ContextGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">push</span>()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="ident">ContextGuard</span>(<span class="ident">PhantomData</span>))
+    }
+
+    <span class="doccomment">/// Push this context on top of the thread-local stack of context, making it the active context</span>
+    <span class="doccomment">/// for CUDA operations. The context must be deactivated using [`pop`] when done. Usage of</span>
+    <span class="doccomment">/// this method is not recommended since it is easy to accidentally forget to pop the</span>
+    <span class="doccomment">/// context. See [`with`], [`try_with`], and [`activate`]  for alternatives.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`pop`]: #method.pop</span>
+    <span class="doccomment">/// [`with`]: #method.with</span>
+    <span class="doccomment">/// [`try_with`]: #method.try_with</span>
+    <span class="doccomment">/// [`activate`]: #method.activate</span>
+    <span class="comment">// TODO: Should this be unsafe?</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span> {
+        <span class="kw">unsafe</span> { <span class="ident">cuda_check</span>(<span class="ident">cuCtxPushCurrent_v2</span>(<span class="self">self</span>.<span class="ident">raw</span>())) }
+    }
+
+    <span class="doccomment">/// Pops the current context of the thread-local stack and returns the handle. Returns `None`</span>
+    <span class="doccomment">/// if the stack was empty.</span>
+    <span class="comment">// TODO: Should this be unsafe?</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pop</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ContextHandle</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> { <span class="ident">cuda_call</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">cuCtxPopCurrent_v2</span>(<span class="ident">c</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident"><span class="self">Self</span>::from_raw</span>(<span class="ident">c</span>)) }
+    }
+
+    <span class="doccomment">/// Blocks until all requested work on this context have completed.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">synchronize</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span> {
+        <span class="self">self</span>.<span class="ident">try_with</span>(<span class="op">|</span><span class="op">|</span> <span class="kw">unsafe</span> { <span class="ident">cuda_check</span>(<span class="ident">cuCtxSynchronize</span>()) })
+    }
+
+    <span class="doccomment">/// Returns the underlying `CUcontext` of this handle.</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raw</span>(<span class="self">self</span>) -&gt; <span class="ident">CUcontext</span> {
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="ident">CUcontext</span>
+    }
+
+    <span class="doccomment">/// Construct a `ContextHandle` for the given `CUcontext`. Returns `None` if the argument is</span>
+    <span class="doccomment">/// `null`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">/// The given argument must a valid `CUcontext` as this function performs no additional checks.</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">c</span>: <span class="ident">CUcontext</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="ident">NonNull::new</span>(<span class="ident">c</span> <span class="kw">as</span> <span class="kw-2">*mut</span> ()).<span class="ident">map</span>(<span class="self">Self</span>)
+    }
+
+    <span class="comment">// Returns the free and total amount of memory for the device associated with this context.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">memory_free_and_total</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">try_with</span>(<span class="op">|</span><span class="op">|</span> {
+            <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">total</span>, <span class="kw-2">mut</span> <span class="ident">free</span>) <span class="op">=</span> (<span class="number">0</span>, <span class="number">0</span>);
+            <span class="ident">cuda_check</span>(<span class="kw">unsafe</span> { <span class="ident">cuMemGetInfo_v2</span>(<span class="kw-2">&amp;mut</span> <span class="ident">free</span>, <span class="kw-2">&amp;mut</span> <span class="ident">total</span>) })<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>((<span class="ident">free</span>, <span class="ident">total</span>))
+        })
+    }
+
+    <span class="doccomment">/// Enable peer access</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_peer_access</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span> {
+        <span class="self">self</span>.<span class="ident">try_with</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">cuda_check</span>(<span class="kw">unsafe</span> { <span class="ident">cuCtxEnablePeerAccess</span>(<span class="self">self</span>.<span class="ident">raw</span>(), <span class="number">0</span>) }))
+    }
+
+    <span class="doccomment">/// Disable peer access</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">disable_peer_access</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span> {
+        <span class="self">self</span>.<span class="ident">try_with</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">cuda_check</span>(<span class="kw">unsafe</span> { <span class="ident">cuCtxDisablePeerAccess</span>(<span class="self">self</span>.<span class="ident">raw</span>()) }))
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">can_access_peer</span>(<span class="self">self</span>, <span class="ident">peer</span>: <span class="ident">Device</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">device</span>()<span class="question-mark">?</span>.<span class="ident">can_access_peer</span>(<span class="ident">peer</span>)
+    }
+}
+
+<span class="doccomment">/// RAII guard returned by [`ContextHandle#activate`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Pops the current CUDA context when dropped. See the above method for details.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ContextHandle#activate`]: struct.ContextHandle.html#method.activate</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="comment">// PhantomData has two parts:</span>
+<span class="comment">// * &quot;&amp;&#39;a ContextHandle: To make sure the guard does not outlive the handle.</span>
+<span class="comment">// * &quot;*mut ()&quot;: To make sure the type is !Send.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContextGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">PhantomData</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ContextHandle</span>, <span class="kw-2">*mut</span> <span class="ident">i32</span>)<span class="op">&gt;</span>);
+
+<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">ContextGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">ContextHandle::pop</span>();
+    }
+}
+
+<span class="macro">bitflags::bitflags!</span> {
+    <span class="doccomment">/// Flags for configuring a CUDA context.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Represents the `CU_CTX_*` flags from the CUDA driver API.</span>
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContextFlags</span>: <span class="ident">c_uint</span> {
+        <span class="kw">const</span> <span class="ident">SCHED_SPIN</span> <span class="op">=</span> <span class="ident">CUctx_flags_enum::CU_CTX_SCHED_SPIN</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
+        <span class="kw">const</span> <span class="ident">SCHED_YIELD</span> <span class="op">=</span> <span class="ident">CUctx_flags_enum::CU_CTX_SCHED_YIELD</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
+        <span class="kw">const</span> <span class="ident">BLOCING_SYNC</span> <span class="op">=</span> <span class="ident">CUctx_flags_enum::CU_CTX_SCHED_BLOCKING_SYNC</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
+        <span class="kw">const</span> <span class="ident">SCHED_AUTO</span> <span class="op">=</span> <span class="ident">CUctx_flags_enum::CU_CTX_SCHED_AUTO</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
+        <span class="kw">const</span> <span class="ident">MAP_HOST</span> <span class="op">=</span> <span class="ident">CUctx_flags_enum::CU_CTX_MAP_HOST</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
+        <span class="kw">const</span> <span class="ident">LMEM_RESIZE_TO_MAX</span> <span class="op">=</span> <span class="ident">CUctx_flags_enum::CU_CTX_LMEM_RESIZE_TO_MAX</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
+    }
+}
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lightning_cuda" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+</body></html>

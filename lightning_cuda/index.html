@@ -1,0 +1,90 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="This crate offers transparent rustic wrappers around the CUDA driver API."><meta name="keywords" content="rust, rustlang, rust-lang, lightning_cuda"><title>lightning_cuda - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings" ></script><script src="../storage.js"></script><script src="../crates.js"></script><script defer src="../main.js"></script>
+    <noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../lightning_cuda/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><h2 class="location">Crate lightning_cuda</h2><div class="block version"><div class="narrow-helper"></div><p>Version 0.1.0</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all lightning_cuda's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#functions">Functions</a></li></ul></div><div id="sidebar-vars" data-name="lightning_cuda" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../wheel.svg"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">lightning_cuda</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/lightning_cuda/lib.rs.html#1-162" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>This crate offers transparent rustic wrappers around the CUDA driver API.</p>
+<h2 id="what-is-this" class="section-header"><a href="#what-is-this">What is this?</a></h2>
+<p>This crate offers Rust versions of functions and types from the CUDA driver API. It assumes the user
+is aware of how the CUDA API looks like, but wants slightly more convenience when working with CUDA.</p>
+<p>The goal of this crate is to be as light-weight as possible: most types are a simple wrappers around
+CUDA types and most functions simply forward the call directly to a CUDA function.</p>
+<p>For example, <a href="stream/struct.Stream.html"><code>Stream</code></a> is a newtype around a <code>CUstream</code>, <a href="stream/struct.Stream.html#method.new"><code>Stream::new</code></a> simply calls
+<code>cuStreamCreate</code>, and <code>Drop</code> simply calls <code>cuStreamDestroy</code>, and <a href="stream/struct.Stream.html#method.raw"><code>Stream::raw</code></a> returns the underlying
+<code>CUstream</code> when needed for FFI. The should be no runtime overhead of using these methods opposed
+to the raw functions.</p>
+<h2 id="why-choose-cuba-over-other-cuda-crates" class="section-header"><a href="#why-choose-cuba-over-other-cuda-crates">Why choose cuba over other CUDA crates?</a></h2>
+<p>There exist many excellent CUDA crates already. The design of this crate is similar to that of
+<a href="https://crates.io/crates/rustacuda">RustaCUDA</a>. In fact, CUBA was born out of minor gripes with RustaCUDA’s design, most notably related
+to FFI interaction, thread-safety, and launching kernels. Although this code in this crate was
+written from scratch, in some sense, it can be seen as a “spriritual” fork of RustaCUDA.</p>
+<p>Some are other crates worth considering when working with CUDA.</p>
+<ul>
+<li>Low-level bindings
+<ul>
+<li><a href="https://crates.io/crates/cuda">cuda</a></li>
+<li><a href="https://crates.io/crates/cuda-driver-sys">cuda-driver-sys</a></li>
+<li><a href="https://crates.io/crates/cuda-runtime-sys">cuda-runtime-sys</a></li>
+<li><a href="https://crates.io/crates/cuda-sys">cuda-sys</a></li>
+<li><a href="https://crates.io/crates/cu-sys">cu-sys</a></li>
+<li><a href="https://crates.io/crates/cudart">cudart</a></li>
+<li><a href="https://crates.io/crates/cu">cu</a></li>
+</ul>
+</li>
+<li>High-level abstractions
+<ul>
+<li><a href="https://crates.io/crates/rustacuda">RustaCUDA</a></li>
+<li><a href="https://crates.io/crates/accel">accel</a></li>
+<li><a href="https://crates.io/crates/coaster">coaster</a></li>
+<li><a href="https://crates.io/crates/arrayfire">arrayfire</a></li>
+<li><a href="https://crates.io/crates/collenchyma">collenchyma</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="unsafe-and-ffi" class="section-header"><a href="#unsafe-and-ffi">Unsafe and FFI</a></h2>
+<p>This crate allows safe functions where possible, but is not afraid to expose unsafe CUDA
+functionality which cannot be made safe without additional overhead. For example, <a href="copy/fn.copy.html"><code>copy</code></a>
+allows copying between buffers if this can be done safely, while the unsafe variant <a href="copy/fn.copy_raw.html"><code>copy_raw</code></a>
+performs no safety checks.</p>
+<p>Additionally, most types have a <code>raw</code> method which exposes the underlying CUDA type (for example, <a href="stream/struct.Stream.html#method.raw"><code>Stream::raw</code></a>
+returns the <code>CUstream</code>) and an unsafe <code>from_raw</code> method which allows constructing a Rust type from
+a CUDA type (for example, <a href="stream/struct.Stream.html#method.from_raw"><code>Stream::from_raw</code></a> which takes a <code>CUstream</code>). This enables FFI
+integration without existing libraries which work with raw CUDA types.</p>
+<h2 id="error-handling" class="section-header"><a href="#error-handling">Error handling</a></h2>
+<p>Nearly all functions in the CUDA driver API return an status code indicating whether the operation
+was successful. This crate mimics this behavior by returning a <a href="error/type.Result.html"><code>CudaResult</code></a> which can be either
+<code>Ok(_)</code> on success or a <a href="error/struct.Error.html"><code>CudaError</code></a> on failure.</p>
+<h2 id="usage" class="section-header"><a href="#usage">Usage</a></h2>
+<p>The preferred way of using this crate is importing everything from <a href="prelude/index.html"><code>prelude</code></a>. The prelude
+exposes all items prefixed with “Cuda” to prevent name collisions. (for example, <a href="stream/struct.Stream.html"><code>Stream</code></a>
+becomes <code>CudaStream</code>).</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">cuba::prelude</span>::<span class="kw-2">*</span>;
+
+<span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="ident">CudaDevice::nth</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">cuda_create_context</span>(<span class="ident">device</span>, <span class="ident">CudaContextFlags::empty</span>())<span class="question-mark">?</span>;
+
+<span class="comment">// Use CudaStream, CudaEvent, CudaModule, CudaDeviceMem, etc...</span>
+
+<span class="kw">unsafe</span> { <span class="ident">cuda_destroy_context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>; }</code></pre></div>
+<p>As an alternative, you could also use the <code>cuba</code> namespace directly, but this is more cluttered.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="ident">cuba::Device::nth</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="ident">cuba::create_context</span>(<span class="ident">device</span>, <span class="ident">cuba::ContextFlags::empty</span>())<span class="question-mark">?</span>;
+
+<span class="comment">// Use cuba::Stream, cuba::Event, cuba::Module, cuba::DeviceMem, etc...</span>
+
+<span class="kw">unsafe</span> { <span class="ident">cuba::destroy_context</span>(<span class="ident">context</span>)<span class="question-mark">?</span>; }</code></pre></div>
+</div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="context/index.html" title="mod lightning_cuda::context">context</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="copy/index.html" title="mod lightning_cuda::copy">copy</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="device/index.html" title="mod lightning_cuda::device">device</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="error/index.html" title="mod lightning_cuda::error">error</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="event/index.html" title="mod lightning_cuda::event">event</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="mem/index.html" title="mod lightning_cuda::mem">mem</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="module/index.html" title="mod lightning_cuda::module">module</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="profiler/index.html" title="mod lightning_cuda::profiler">profiler</a>::*;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="stream/index.html" title="mod lightning_cuda::stream">stream</a>::*;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="context/index.html" title="lightning_cuda::context mod">context</a></div><div class="item-right docblock-short"><p>Management of CUDA contexts</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="copy/index.html" title="lightning_cuda::copy mod">copy</a></div><div class="item-right docblock-short"><p>Copying between device/host buffers..</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="device/index.html" title="lightning_cuda::device mod">device</a></div><div class="item-right docblock-short"><p>CUDA device management.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="error/index.html" title="lightning_cuda::error mod">error</a></div><div class="item-right docblock-short"><p>Error handling</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="event/index.html" title="lightning_cuda::event mod">event</a></div><div class="item-right docblock-short"><p>Management of CUDA events.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="mem/index.html" title="lightning_cuda::mem mod">mem</a></div><div class="item-right docblock-short"><p>Memory allocation in CUDA.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="module/index.html" title="lightning_cuda::module mod">module</a></div><div class="item-right docblock-short"><p>Loading CUDA modules and calling kernels.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="prelude/index.html" title="lightning_cuda::prelude mod">prelude</a></div><div class="item-right docblock-short"><p>Exports commonly used items.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="profiler/index.html" title="lightning_cuda::profiler mod">profiler</a></div><div class="item-right docblock-short"><p>Management of CUDA profiler.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="stream/index.html" title="lightning_cuda::stream mod">stream</a></div><div class="item-right docblock-short"><p>Management of CUDA streams.</p>
+</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.init.html" title="lightning_cuda::init fn">init</a></div><div class="item-right docblock-short"><p>Initialize the CUDA runtime.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.version.html" title="lightning_cuda::version fn">version</a></div><div class="item-right docblock-short"><p>Returns the version of the CUDA driver API.</p>
+</div></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="lightning_cuda" data-search-index-js="../search-index.js" data-search-js="../search.js"></div>
+</body></html>

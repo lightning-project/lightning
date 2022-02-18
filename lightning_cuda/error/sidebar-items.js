@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["cuda_call","Returns the output value of a CUDA driver API function."],["cuda_check","Check the result of a CUDA driver API function."]],"struct":[["Error","Error returned by the CUDA driver API."]],"type":[["Result","Alias for `std::result::Result<T, cuba::Error>`."]]});

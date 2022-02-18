@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["MAX_DEVICES","Maximum number of possible devices."]],"enum":[["ExecutorKind",""],["MemoryKind",""]],"struct":[["DeviceCapabilities",""],["DeviceId","A devices number between 0 and [`MAX_DEVICES`]."],["DeviceInfo",""],["ExecutorId",""],["MemoryId",""],["SystemInfo",""],["WorkerId",""],["WorkerInfo",""]]});

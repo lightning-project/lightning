@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["RowBlockCyclic","Distributes rows among devices in block-cyclic fashion."],["RowBlockDist","Distributes rows among devices in blocked fashion."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["StencilDist","Distributes 1D array in block-cylic fashion while also maintaining halo cells."],["StencilDistribution",""]]});

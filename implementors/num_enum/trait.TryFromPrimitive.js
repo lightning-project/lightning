@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["lightning_core"] = [{"text":"impl TryFromPrimitive for <a class=\"enum\" href=\"lightning_core/enum.PrimitiveType.html\" title=\"enum lightning_core::PrimitiveType\">PrimitiveType</a>","synthetic":false,"types":["lightning_core::data_type::PrimitiveType"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
