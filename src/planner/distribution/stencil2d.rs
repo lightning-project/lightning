@@ -315,8 +315,8 @@ mod test {
 
                 chunks.push(ReferenceChunk {
                     subregion: (
-                        xstart_with_halo..ystart_with_halo,
-                        xend_with_halo..yend_with_halo,
+                        xstart_with_halo..xend_with_halo,
+                        ystart_with_halo..yend_with_halo,
                     )
                         .into(),
                     owned_subregion: (xstart..xend, ystart..yend).into(),
