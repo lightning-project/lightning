@@ -15,13 +15,27 @@ jobs:
 
     steps:
     - name: Install MPI
-      run: sudo apt install mpich
+      run: |
+        sudo apt update
+        sudo apt install -y mpich
 
     - uses: Jimver/cuda-toolkit@v0.2.5
       name: Install CUDA
       id: cuda-toolkit
       with:
         cuda: '11.5.1'
+
+    # There seems to be an issue where rustc cannot find libcuda.so.
+    #
+    # > error while loading shared libraries: libcuda.so.1: cannot open shared object file: No such file or directory
+    #
+    # This command fixes that, but it needs more thorough investigation into
+    # why this error occurs and what is the right way to fix it.
+    - name: Fix libraries
+      run: |
+          sudo ln -s $CUDA_PATH/lib64/stubs/libcuda.so /usr/lib/libcuda.so
+          sudo ln -s $CUDA_PATH/lib64/stubs/libcuda.so /usr/lib/libcuda.so.1
+
 
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
